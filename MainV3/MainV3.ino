@@ -1,42 +1,41 @@
 #include <SSD1306Wire.h> 
 #include "DHT.h"
 
-#define RELE 12
-#define DHTPIN 5    
-#define DHTTYPE DHT22 
-#define scl 22
-#define sda 21
-#define PINSOLO 15
+#define RELAY 12
+#define DHT_PIN 5    
+#define DHT_TYPE DHT22 
+#define SCL 22
+#define SDA 21
+#define PIN_SOLO 15
 
 #define HUM_SOLO_MIN 30
 #define HUM_AR_MIN 60
 #define TEMP_AR_MAX 30
 
-SSD1306Wire  display(0x3c, sda, scl);
-DHT dht(DHTPIN, DHTTYPE);
+SSD1306Wire display(0x3c, SDA, SCL);
+DHT dht(DHT_PIN, DHT_TYPE);
 
-float humidade = 0, temperatura = 0, umidadeSolo;
-String textoTemperatura ="";
-String textoHumidade ="";
-String textoUmidadeSolo;
-
+float humidade, temperatura, umidade_do_solo;
+String texto_temperatura = "";
+String texto_umidade = "";
+String texto_umidade_solo = "";
 
 void ligarBomba(){
-  digitalWrite(RELE,HIGH);
+  digitalWrite(RELAY, HIGH);
 }
 
 void desligarBomba(){
-  digitalWrite(RELE,LOW);
+  digitalWrite(RELAY, LOW);
 }
 
 void medeUmidadeDoSolo() {
-  umidadeSolo = map (analogRead (PINSOLO),4095,1000,0,100);
-  textoUmidadeSolo = String(umidadeSolo) + " % ";
+  umidade_do_solo = map (analogRead (PIN_SOLO), 4095, 1000, 0, 100);
+  texto_umidade_solo = String(umidade_do_solo) + " % ";
   delay(2000);
 }
 
 void iniciaSensorSolo(){
-  pinMode(PINSOLO, INPUT);
+  pinMode(PIN_SOLO, INPUT);
 }
 
 void inicializaSensorHumETempAr(){
@@ -54,24 +53,24 @@ void leituraSensorHumidadeEtemperaturaDoAr(){
     Serial.println(F("Failed to read from DHT sensor!"));
     
   }
-  textoTemperatura = String(temperatura) + " C ";
-  textoHumidade = String(humidade) + " % ";
+  texto_temperatura = String(temperatura) + " C ";
+  texto_umidade = String(humidade) + " % ";
 }
 
 void imprimeDadosNoDisplay(){
   display.clear();
   Serial.println("Imprimindo no display");
-  Serial.println(textoTemperatura);
-  Serial.println(textoHumidade);
-  Serial.println(textoUmidadeSolo);
+  Serial.println(texto_temperatura);
+  Serial.println(texto_umidade);
+  Serial.println(texto_umidade_solo);
   
   display.setFont(ArialMT_Plain_16);
   display.drawRect(0, 0, 128, 64);
   //display.setTextAlignment(TEXT_ALIGN_CENTER);
-  //display.drawString(50, 0, textoTemperatura + textoHumidade + textoUmidadeSolo);
-  display.drawString(10, 2, "Temp : " + textoTemperatura + "\n");
-  display.drawString(10, 20, "Umid : " + textoHumidade + "\n");
-  display.drawString(10, 40, "SoLo : " + textoUmidadeSolo + "\n");
+  //display.drawString(50, 0, texto_temperatura + texto_umidade + textoUmidadeSolo);
+  display.drawString(10, 2, "Temp : " + texto_temperatura + "\n");
+  display.drawString(10, 20, "Umid : " + texto_umidade + "\n");
+  display.drawString(10, 40, "SoLo : " + texto_umidade_solo + "\n");
   display.display();
 }
 
@@ -106,7 +105,7 @@ void mensagemHumBaixa() {
 }
 
 void tomaAcoes () {
-  if (umidadeSolo < HUM_SOLO_MIN) {
+  if (umidade_do_solo < HUM_SOLO_MIN) {
     ligarBomba();
   }else {
     desligarBomba();
@@ -117,7 +116,6 @@ void tomaAcoes () {
 }
 
 void setup() {
-  
   //Inicia Monitor Serial
   Serial.begin(9600);
 
@@ -130,14 +128,12 @@ void setup() {
   //Inicia Sensor de umidade do solo
   iniciaSensorSolo();
 
-  pinMode(RELE, OUTPUT);
-  
+  //Inicia o relay
+  pinMode(RELAY, OUTPUT);
 }
 
 void loop() {  
-
   lerTodosSensores();
   tomaAcoes();   
   imprimeDadosNoDisplay();
-  
 }
