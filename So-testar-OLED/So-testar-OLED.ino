@@ -1,7 +1,7 @@
 #include <SSD1306Wire.h>
 
-#define scl 5//22
-#define sda 18//21
+#define scl 22//5
+#define sda 21//18
 
 SSD1306Wire  display(0x3c, sda, scl);
 
