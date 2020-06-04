@@ -8,27 +8,27 @@
 #define DHTTYPE DHT11 // Definindo o tipo de sensor
 
 // Definindo pinos do sensor de distancia
-#define PinoTrigger 13
-#define PinoEcho 12
+#define PINOTRIGGER 13
+#define PINOECHO 12
 
 // Definindo pinos do relay
-#define Reley1 25
-#define Reley2 33
+#define RELEY1 25
+#define RELEY2 33
 
 // Define constantes
-#define MinDist 0
-#define MaxDist 20
-#define MinTemp 20
-#define MaxTemp 23
-#define TotalReadTemp 5
+#define MINDIST 0
+#define MAXDIST 20
+#define MINTEMP 20
+#define MAXTEMP 23
+#define TOTALREADTEMP 5
 
 // Variaveis obtidas na leitura
 float dist, temp, sumTemp, medTemp;
-float readTemp[TotalReadTemp];
+float readTemp[TOTALREADTEMP];
 int loopReadTemp;
 
 // Cria objeto do sensor de distancia
-Ultrasonic ultrasonic(PinoTrigger, PinoEcho);
+Ultrasonic ultrasonic(PINOTRIGGER, PINOECHO);
 
 // Cria objeto do sensor de temperatura e umidade
 DHT dht(DHTPIN, DHTTYPE);
@@ -58,31 +58,27 @@ void printTemp () {
 }
 
 void onGreenLed () {
-  digitalWrite(Reley1, HIGH);
+  digitalWrite(RELEY1, HIGH);
 }
 
 void onRedLed () {
-  digitalWrite(Reley2, HIGH);
+  digitalWrite(RELEY2, HIGH);
 }
 
 void offGreenLed () {
-  digitalWrite(Reley1, LOW);
+  digitalWrite(RELEY1, LOW);
 }
 
 void offRedLed () {
-  digitalWrite(Reley2, LOW);
+  digitalWrite(RELEY2, LOW);
 }
 
 void setup() {
 
   // Definindo os modos dos pinos
-  pinMode(Reley1, OUTPUT);
-  pinMode(Reley2, OUTPUT);
+  pinMode(RELEY1, OUTPUT);
+  pinMode(RELEY2, OUTPUT);
 
-  Serial.println();
-  Serial.println();
-  Serial.println();
-  
   Serial.begin(9600);
   Serial.print("Iniciando dispositivos");
   for(int i = 0; i < 3; i++){
@@ -119,7 +115,7 @@ void loop() {
 
     Serial.println("-------------------------------");
     
-    for(int i = 0; i < TotalReadTemp; i++){
+    for(int i = 0; i < TOTALREADTEMP; i++){
       readTemp[i] = lerTemp();
       sumTemp += readTemp[i];
       Serial.print("Temperatura n");
@@ -130,16 +126,16 @@ void loop() {
 
     Serial.println("-------------------------------");
 
-    medTemp = sumTemp / TotalReadTemp;
+    medTemp = sumTemp / TOTALREADTEMP;
 
-    if ( MinTemp < medTemp && medTemp < MaxTemp ){
+    if ( MINTEMP < medTemp && medTemp < MAXTEMP ){
       onGreenLed();
       Serial.println("Sua temperatura está correta. Pode continuar");
       delay(2000);
       break;
     }
 
-    if ( MaxTemp < medTemp ){
+    if ( MAXTEMP < medTemp ){
       onRedLed();
       Serial.println("Sua temperatura não está bem.");
       delay(2000);
