@@ -1,78 +1,99 @@
-// Bibioteca do sensorde temperatura e umidade
-#include "DHT.h"
-// Bibioteca do sensor de distancia
-#include <Ultrasonic.h>
+// Bibioteca do sensorde temperatura e umidade ////////////
+#include "DHT.h"																				 //
+// Bibioteca do sensor de distancia											 //
+#include <Ultrasonic.h>																	 //
+///////////////////////////////////////////////////////////
 
-// Definindo pino do sensorde temperatura e umidade
-#define DHTPIN 14 // Selecionando o pino
-#define DHTTYPE DHT11 // Definindo o tipo de sensor
+// Definindo pino do sensor de temperatura e umidade //////
+#define DHTPIN 14 // Selecionando o pino								 //
+#define DHTTYPE DHT11 // Definindo o tipo de sensor      //
+///////////////////////////////////////////////////////////
 
 // Definindo pinos do sensor de distancia
 #define PINOTRIGGER 13
 #define PINOECHO 12
+///////////////////////////////////////////////////////////
 
-// Definindo pinos do relay
-#define RELEY1 25
-#define RELEY2 33
+// Definindo pinos do relay ///////////////////////////////
+#define RELEY1 25																				 //
+#define RELEY2 33																				 //
+///////////////////////////////////////////////////////////
 
-// Define constantes
-#define MINDIST 0
-#define MAXDIST 20
-#define MINTEMP 20
-#define MAXTEMP 23
-#define TOTALREADTEMP 5
+// Define constantes /////////////////////////////////////
+#define MINDIST 0																				//
+#define MAXDIST 20																			//
+#define MINTEMP 20																			//
+#define MAXTEMP 23																			//
+#define TOTALREADTEMP 5																	//
+//////////////////////////////////////////////////////////
 
-// Variaveis obtidas na leitura
-float dist, temp, sumTemp, medTemp;
-float readTemp[TOTALREADTEMP];
-int loopReadTemp;
+// Variaveis obtidas na leitura	//////////////////////////
+float dist, temp, sumTemp, medTemp;											//
+float readTemp[TOTALREADTEMP];													//
+int loopReadTemp;																				//
+//////////////////////////////////////////////////////////
 
-// Cria objeto do sensor de distancia
-Ultrasonic ultrasonic(PINOTRIGGER, PINOECHO);
+// Cria objeto do sensor de distancia /////////////////////
+Ultrasonic ultrasonic(PINOTRIGGER, PINOECHO);						 //
+///////////////////////////////////////////////////////////
 
-// Cria objeto do sensor de temperatura e umidade
-DHT dht(DHTPIN, DHTTYPE);
+// Cria objeto do sensor de temperatura e umidade ////////
+DHT dht(DHTPIN, DHTTYPE);                               //
+//////////////////////////////////////////////////////////
 
-// Ler distância
+// Ler distância /////////////////////////////////////////
 float lerDistancia () {
   long microsec = ultrasonic.timing();
   return ultrasonic.convert(microsec, Ultrasonic::CM);
 }
+//////////////////////////////////////////////////////////
 
-// Ler temperatura
+// Ler temperatura ///////////////////////////////////////
 float lerTemp () {
   return dht.readTemperature();
 }
+//////////////////////////////////////////////////////////
 
-// Print distância lida
+// Print distância lida ///////////////////////////////
 void printDist () {
   Serial.print("Distancia em cm: ");
   Serial.println(dist);
 }
+//////////////////////////////////////////////////////////
 
-// Print temperatura lida
+// Print temperatura lida ///////////////////////////////
 void printTemp () {
   Serial.print("Temperatura: ");
   Serial.print(temp);
   Serial.println(" *C");
 }
+//////////////////////////////////////////////////////////
 
+// Liga o led verde ///////////////////////////////////
 void onGreenLed () {
   digitalWrite(RELEY1, HIGH);
 }
+//////////////////////////////////////////////////////////
 
+// Liga o led vermelho ///////////////////////////////////
 void onRedLed () {
   digitalWrite(RELEY2, HIGH);
 }
+//////////////////////////////////////////////////////////
 
+// Desliga o led verde ///////////////////////////////////
 void offGreenLed () {
   digitalWrite(RELEY1, LOW);
 }
+//////////////////////////////////////////////////////////
 
+// Desliga o led vermelho ///////////////////////////////
 void offRedLed () {
   digitalWrite(RELEY2, LOW);
 }
+//////////////////////////////////////////////////////////
 
+// funcao setup //////////////////////////////////////////
 void setup() {
 
   // Definindo os modos dos pinos
@@ -97,7 +118,9 @@ void setup() {
   dht.begin();
   
 }
+//////////////////////////////////////////////////////////
 
+// funcao principal, o loop /////////////////////////////
 void loop() {
   
   dist = lerDistancia();
@@ -108,8 +131,8 @@ void loop() {
 
   delay(500);
 
-  loopReadTemp = 0;
-  while ( loopReadTemp < 5 ) {
+  
+  for (loopReadTemp = 0; loopReadTemp < 5; loopReadTemp++) {
 
     sumTemp = 0;
 
@@ -141,11 +164,10 @@ void loop() {
       delay(2000);
       break;
     }
-
-    loopReadTemp++;
   }
 
   offRedLed();
   offGreenLed();
   delay(3000);
 }
+//////////////////////////////////////////////////////////
