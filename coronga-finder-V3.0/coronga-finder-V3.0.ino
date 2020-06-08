@@ -1,3 +1,4 @@
+
 // Bibioteca do sensor de tempCorperatura
 #include <Wire.h>
 #include <Adafruit_MLX90614.h>                                         
@@ -17,10 +18,12 @@
 
 // Define constantes //////////////////////////////////////
 #define MINDIST 0                                       
-#define MAXDIST 20                                      
-#define MINTEMP 0                                    
-#define MAXTEMP 10                                 
-#define TOTALREADTEMP 20                                 
+#define MAXDIST 10                                     
+#define MINTEMP 30                                    
+#define MAXTEMP 37                                 
+#define MINNORMALTEMP 30                                    
+#define MAXNORMALTEMP 60
+#define TOTALREADTEMP 40                                 
 ///////////////////////////////////////////////////////////
 
 // Variaveis obtidas na leitura ///////////////////////////
@@ -65,7 +68,59 @@ void printTemp () {
 }
 //////////////////////////////////////////////////////////
 
-// Liga o led verde ///////////////////////////////////
+// Ordena vetor temperatura /////////////////////////////
+void ordenar () {
+  int count, indice, i_maior, auxiliar;
+  for (count = TOTALREADTEMP - 1; count > 0; count--) {
+    for (indice = 1, i_maior = 0; indice < TOTALREADTEMP; indice++) {
+      if(readTemp[indice] < readTemp[i_maior]) {
+        i_maior = indice;
+      }
+    }
+    auxiliar = readTemp[i_maior];
+    readTemp[i_maior] = readTemp[indice];
+    readTemp[indice] = auxiliar;
+  }
+}
+//////////////////////////////////////////////////////////
+
+// função que le x temperaturas para um vetor
+//////////////////////////////////////////////////////////
+void lerVet () {
+  for(int i = 0; i < TOTALREADTEMP; i++){
+      readTemp[i] = lerTemp();
+      Serial.print("Temperatura n");
+      Serial.print(i+1);
+      Serial.print(": ");
+      Serial.println(readTemp[i]);
+      delay(50);
+    }
+}
+//////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////
+// função que calcula media somente com os valores dentro da faixa
+// de valores aceitaveis /////////////////////////////////////////
+//////////////////////////////////////////////////////////////////
+float calcMedia () {
+  int i, j, k;
+  k = 0;
+  sumTemp = 0;
+  int equilibrio = floor((TOTALREADTEMP/3) * 2);
+  for(i = j = TOTALREADTEMP - equilibrio; i < equilibrio; i++){
+    if (MINNORMALTEMP < readTemp[i] && readTemp[i] < MAXNORMALTEMP){
+      sumTemp += readTemp[i];
+      j++;
+      k++;
+    }
+  }
+  if (!k) return 0;
+  
+  return sumTemp / k;   
+}
+
+
+// Liga o led verde //////////////////////////////////////
 void onGreenLed () {
   digitalWrite(RELEY1, HIGH);
 }
@@ -117,31 +172,28 @@ void setup() {
 
 // funcao principal, o loop /////////////////////////////
 void loop() {
-dist = lerDistancia();
+  dist = lerDistancia();
   while ( !( MINDIST < dist && dist < MAXDIST ) ){
     dist = lerDistancia();
     Serial.println("Se aproxime ao sensor.");
   }
   delay(1000);
-    for (loopReadTemp = 0; loopReadTemp < 5; loopReadTemp++) {
-
-    sumTemp = 0;
+  for (loopReadTemp = 0; loopReadTemp < 5; loopReadTemp++) {
 
     Serial.println("-------------------------------");
+
+    lerVet();
     
-    for(int i = 0; i < TOTALREADTEMP; i++){
-      readTemp[i] = lerTemp();
-      sumTemp += readTemp[i];
-      Serial.print("Temperatura n");
-      Serial.print(i+1);
-      Serial.print(": ");
-      Serial.println(readTemp[i]);
-      delay(100);
-    }
-
     Serial.println("-------------------------------");
 
-    medTemp = sumTemp / TOTALREADTEMP;
+    ordenar();
+
+    medTemp = calcMedia();
+
+    Serial.print("Temperatura media é: ");
+    Serial.println(medTemp);
+    
+    Serial.println("-------------------------------");
 
     if ( MINTEMP < medTemp && medTemp < MAXTEMP ){
       onGreenLed();
@@ -157,7 +209,7 @@ dist = lerDistancia();
       break;
     }
   }
-  if (loopReadTemp == 5) Serial.println("Sua medição falhou!");
+  if (loopReadTemp == 5 || !medTemp) Serial.println("Sua medição falhou!");
 
   offRedLed();
   offGreenLed();
